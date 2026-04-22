@@ -28,6 +28,23 @@ io.on("connection", (socket) => {
         
     });
 
+
+    socket.on("mouse_move", (data) => {
+        // Envia a posição para todos, EXCETO para quem enviou
+        socket.broadcast.emit("mouse_update", {
+            id: socket.id,
+            name: data.name,
+            x: data.x,
+            y: data.y
+        });
+    });
+
+    // Quando alguém desconectar, avisar para remover o cursor
+    socket.on("disconnect", () => {
+        io.emit("remove_cursor", socket.id);
+        // ... resto do seu código de disconnect
+    });
+
     socket.on("start", () => {
         tema = temas[Math.floor(Math.random() * temas.length)];
         impostor = players[Math.floor(Math.random() * players.length)];

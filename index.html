@@ -166,6 +166,33 @@
             font-size: 0.9rem;
             color: var(--text-dim);
         }
+
+        .remote-cursor {
+            position: fixed;
+            pointer-events: none; /* Garante que o cursor não atrapalhe cliques */
+            z-index: 9999;
+            transition: transform 0.1s linear; /* Suaviza o movimento */
+        }
+
+        .cursor-pointer {
+            width: 15px;
+            height: 15px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .cursor-label {
+            position: absolute;
+            top: 18px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -257,6 +284,47 @@
                 overlay.style.display = "none";
             }
         }, 1000);
+    });
+
+
+    const cursors = {};
+
+    let lastSend = 0;
+    window.addEventListener('mousemove', (e) => {
+        const now = Date.now();
+        if (now - lastSend > 50) { // Só envia a cada 50ms
+            const name = document.getElementById("name").value;
+            socket.emit("mouse_move", { x: e.clientX, y: e.clientY, name });
+            lastSend = now;
+        }
+    });
+
+    // 2. Atualizar cursores dos outros
+    socket.on("mouse_update", (data) => {
+        let cursorDiv = cursors[data.id];
+
+        if (!cursorDiv) {
+            // Se o cursor não existe, cria ele
+            cursorDiv = document.createElement("div");
+            cursorDiv.className = "remote-cursor";
+            cursorDiv.innerHTML = `
+                <div class="cursor-pointer"></div>
+                <div class="cursor-label">${data.name}</div>
+            `;
+            document.body.appendChild(cursorDiv);
+            cursors[data.id] = cursorDiv;
+        }
+
+        // Atualiza a posição
+        cursorDiv.style.transform = `translate(${data.x}px, ${data.y}px)`;
+    });
+
+    // 3. Remover cursor quando alguém sai
+    socket.on("remove_cursor", (id) => {
+        if (cursors[id]) {
+            cursors[id].remove();
+            delete cursors[id];
+        }
     });
 </script>
 
