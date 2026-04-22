@@ -46,9 +46,21 @@ io.on("connection", (socket) => {
 
     // Organização por categorias
     const categorias = {
-        "Lugares Públicos": ["Praia", "Hospital", "Escola", "Restaurante", "Aeroporto", "Cinema", "Zoológico", "Academia", "Museu", "Supermercado"],
-        "Aventura e Ficção": ["Navio Pirata", "Estação Espacial", "Castelo Medieval", "Fundo do Mar", "Escola de Magia", "Apocalipse Zumbi", "Base em Marte"],
-        "Trabalho e Cotidiano": ["Escritório", "Canteiro de Obras", "Delegacia", "Oficina Mecânica", "Corpo de Bombeiros", "Salão de Beleza", "Fazenda"]
+        "Objetos Comuns": [
+            "Escova de Dente", "Controle Remoto", "Chaveiro", "Travesseiro", "Guarda-chuva", 
+            "Garrafa de Café", "Relógio de Pulso", "Óculos de Sol", "Mochila", "Tesoura",
+            "Lâmpada", "Cadeira de Escritório", "Espelho", "Fone de Ouvido"
+        ],
+        "Eletrônicos e Tech": [
+            "Smartphone", "Notebook", "Videogame", "Roteador Wi-Fi", "Drone", 
+            "Câmera Fotográfica", "Calculadora", "Micro-ondas", "Televisão", "Power Bank"
+        ],
+        "Ferramentas e Construção": [
+            "Martelo", "Furadeira", "Chave de Fenda", "Trena", "Escada", 
+            "Serrote", "Alicate", "Pá", "Lanterna", "Capacete de Obra"
+        ],
+        "Lugares Públicos": ["Praia", "Hospital", "Escola", "Restaurante", "Aeroporto", "Cinema", "Zoológico", "Academia"],
+        "Aventura e Ficção": ["Navio Pirata", "Estação Espacial", "Castelo Medieval", "Fundo do Mar", "Escola de Magia"]
     };
 
     const nomesCategorias = Object.keys(categorias);
