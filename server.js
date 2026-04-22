@@ -51,30 +51,31 @@ io.on("connection", (socket) => {
 
     // ... restante do código anterior ...
 
-    socket.on("start", (temaEscolhido) => {
-        // Opcional: Validar se quem enviou é o primeiro da lista (Líder)
+    socket.on("start", (categoriaEscolhida) => {
+        // Verifica se é o líder
         if (players.length > 0 && socket.id === players[0].id) {
             
-            // Se o líder escolheu "aleatorio", sorteamos como antes
-            if (temaEscolhido === "aleatorio") {
+            let categoriaFinal = categoriaEscolhida;
+
+            // Se for aleatório, sorteia uma categoria primeiro
+            if (categoriaEscolhida === "aleatorio") {
                 const chaves = Object.keys(categorias);
-                const cat = chaves[Math.floor(Math.random() * chaves.length)];
-                tema = categorias[cat][Math.floor(Math.random() * categorias[cat].length)];
-                // Para o aleatório, enviamos a categoria também
-                var categoriaEnviada = cat;
-            } else {
-                tema = temaEscolhido;
-                var categoriaEnviada = "Escolha do Líder";
+                categoriaFinal = chaves[Math.floor(Math.random() * chaves.length)];
             }
 
+            // Sorteia o tema dentro da categoria escolhida (ou sorteada)
+            const listaLocais = categorias[categoriaFinal];
+            tema = listaLocais[Math.floor(Math.random() * listaLocais.length)];
+            
             impostor = players[Math.floor(Math.random() * players.length)];
+
             io.emit("preparing_start");
 
             setTimeout(() => {
                 players.forEach(p => {
                     const ehImpostor = (p.id === impostor.id);
                     io.to(p.id).emit("role", { 
-                        categoria: categoriaEnviada, 
+                        categoria: categoriaFinal, 
                         tema: ehImpostor ? "???" : tema, 
                         impostor: ehImpostor 
                     });

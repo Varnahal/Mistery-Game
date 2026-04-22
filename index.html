@@ -207,14 +207,14 @@
     <div class="input-group">
         <input type="text" id="name" placeholder="Digite seu nome...">
         <div id="leader-area" style="display: none; margin-bottom: 15px;">
-        <p style="font-size: 0.8rem; color: var(--accent-color);">Você é o Líder!</p>
-        <select id="theme-selector" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid var(--accent-color);">
-            <option value="aleatorio">🎲 Tema Aleatório</option>
-            <optgroup label="Lugares Públicos" id="opt-publicos"></optgroup>
-            <optgroup label="Aventura" id="opt-aventura"></optgroup>
-            <optgroup label="Trabalho" id="opt-trabalho"></optgroup>
-        </select>
-    </div>
+            <p style="font-size: 0.8rem; color: var(--accent-color);">Você é o Líder! Escolha o grupo de temas:</p>
+            <select id="theme-selector" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid var(--accent-color);">
+                <option value="aleatorio">🎲 Totalmente Aleatório</option>
+                <option value="Lugares Públicos">🏢 Lugares Públicos</option>
+                <option value="Aventura e Ficção">⚔️ Aventura e Ficção</option>
+                <option value="Trabalho e Cotidiano">💼 Trabalho e Cotidiano</option>
+            </select>
+        </div>
         <div class="btn-stack">
             <button class="btn-join" onclick="join()">Entrar</button>
             <button class="btn-start" onclick="start()">Começar</button>
@@ -244,21 +244,6 @@
         "Aventura": ["Navio Pirata", "Estação Espacial", "Castelo Medieval", "Fundo do Mar", "Escola de Magia"],
         "Trabalho": ["Escritório", "Canteiro de Obras", "Delegacia", "Oficina Mecânica"]
     };
-
-    // Preencher o select automaticamente
-    function setupThemes() {
-        const maps = { "Lugares Públicos": "opt-publicos", "Aventura": "opt-aventura", "Trabalho": "opt-trabalho" };
-        for (let cat in categoriasJS) {
-            const group = document.getElementById(maps[cat]);
-            categoriasJS[cat].forEach(t => {
-                const opt = document.createElement("option");
-                opt.value = t;
-                opt.textContent = t;
-                group.appendChild(opt);
-            });
-        }
-    }
-    setupThemes();
 
     function join() {
         const nameInput = document.getElementById("name");
@@ -308,7 +293,6 @@
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td>${player.name} ${index === 0 ? '<span class="status-badge" style="color: gold;">👑 Líder</span>' : ''}</td>
-                <td style="text-align: right; color: var(--text-dim);">${player.id.substring(0,5)}</td>
             `;
             tbody.appendChild(tr);
         });
