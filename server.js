@@ -45,23 +45,40 @@ io.on("connection", (socket) => {
         // ... resto do seu código de disconnect
     });
 
+    const categorias = {
+        "Lugares": ["Praia", "Hospital", "Escola", "Cinema", "Academia"],
+        "Aventura": ["Navio Pirata", "Estação Espacial", "Castelo Medieval", "Fundo do Mar"],
+        "Trabalho": ["Escritório", "Oficina Mecânica", "Canteiro de Obras", "Delegacia"]
+    };
+
     socket.on("start", () => {
-        tema = temas[Math.floor(Math.random() * temas.length)];
+        const chaves = Object.keys(categorias);
+        const categoriaSorteada = chaves[Math.floor(Math.random() * chaves.length)];
+        const listaLocais = categorias[categoriaSorteada];
+        
+        tema = listaLocais[Math.floor(Math.random() * listaLocais.length)];
         impostor = players[Math.floor(Math.random() * players.length)];
 
-        // Avisa todo mundo para iniciar a contagem visual
         io.emit("preparing_start");
 
-        // Espera 3.5 segundos (tempo da contagem) para enviar os papéis
         setTimeout(() => {
             players.forEach(p => {
+                // Enviamos a categoria para TODOS, mas o tema apenas para os inocentes
                 if (p.id === impostor.id) {
-                    io.to(p.id).emit("role", { tema: "???", impostor: true });
+                    io.to(p.id).emit("role", { 
+                        categoria: categoriaSorteada, 
+                        tema: "???", 
+                        impostor: true 
+                    });
                 } else {
-                    io.to(p.id).emit("role", { tema, impostor: false });
+                    io.to(p.id).emit("role", { 
+                        categoria: categoriaSorteada, 
+                        tema: tema, 
+                        impostor: false 
+                    });
                 }
             });
-        }, 3500); 
+        }, 3500);
     });
 
     socket.on("disconnect", () => {
