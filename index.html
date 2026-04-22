@@ -243,13 +243,23 @@
 
     socket.on("role", (data) => {
         const display = document.getElementById("role-display");
-        const link = document.getElementById("linkDesenho");
         display.style.display = "block";
-        link.style.display = "block";
+        
+        // Estética para a categoria (aparece para todos)
+        const categoriaHTML = `<div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;">CATEGORIA: ${data.categoria}</div>`;
+
         if (data.impostor) {
-            display.innerHTML = `<b style="color: var(--danger)">VOCÊ É O IMPOSTOR!</b><br>Tente descobrir o Tema.`;
+            display.innerHTML = `
+                ${categoriaHTML}
+                <b style="color: var(--danger); font-size: 1.2rem;">VOCÊ É O IMPOSTOR!</b><br>
+                <span style="font-size: 0.9rem;">Tente descobrir o local sem ser pego.</span>
+            `;
         } else {
-            display.innerHTML = `Tema: <b style="color: #10b981">${data.tema}</b><br>Descubra quem é o impostor!`;
+            display.innerHTML = `
+                ${categoriaHTML}
+                Local: <b style="color: #10b981; font-size: 1.2rem;">${data.tema}</b><br>
+                <span style="font-size: 0.9rem;">Faça perguntas para achar o impostor!</span>
+            `;
         }
     });
 

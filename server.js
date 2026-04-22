@@ -12,9 +12,6 @@ let tema = "";
 let impostor = "";
 
 
-
-const temas = ["Praia", "Hospital", "Escola", "Restaurante"];
-
 io.on("connection", (socket) => {
     io.emit("players", players);
     console.log("Alguém conectou:", socket.id);
@@ -45,40 +42,41 @@ io.on("connection", (socket) => {
         // ... resto do seu código de disconnect
     });
 
+    // Organização por categorias
     const categorias = {
-        "Lugares": ["Praia", "Hospital", "Escola", "Cinema", "Academia"],
-        "Aventura": ["Navio Pirata", "Estação Espacial", "Castelo Medieval", "Fundo do Mar"],
-        "Trabalho": ["Escritório", "Oficina Mecânica", "Canteiro de Obras", "Delegacia"]
+        "Lugares Públicos": ["Praia", "Hospital", "Escola", "Restaurante", "Aeroporto", "Cinema", "Zoológico", "Academia", "Museu", "Supermercado"],
+        "Aventura e Ficção": ["Navio Pirata", "Estação Espacial", "Castelo Medieval", "Fundo do Mar", "Escola de Magia", "Apocalipse Zumbi", "Base em Marte"],
+        "Trabalho e Cotidiano": ["Escritório", "Canteiro de Obras", "Delegacia", "Oficina Mecânica", "Corpo de Bombeiros", "Salão de Beleza", "Fazenda"]
     };
 
+    // ... restante do código anterior ...
+
     socket.on("start", () => {
+        // 1. Sorteia a categoria
         const chaves = Object.keys(categorias);
         const categoriaSorteada = chaves[Math.floor(Math.random() * chaves.length)];
-        const listaLocais = categorias[categoriaSorteada];
         
-        tema = listaLocais[Math.floor(Math.random() * listaLocais.length)];
-        impostor = players[Math.floor(Math.random() * players.length)];
+        // 2. Sorteia o tema dentro daquela categoria
+        const listaLocais = categorias[categoriaSorteada];
+        const temaSorteado = listaLocais[Math.floor(Math.random() * listaLocais.length)];
+        
+        // 3. Sorteia o impostor
+        const impostorSorteado = players[Math.floor(Math.random() * players.length)];
 
+        // 4. Avisa todo mundo da contagem (3, 2, 1...)
         io.emit("preparing_start");
 
+        // 5. Envia os papéis após a contagem
         setTimeout(() => {
             players.forEach(p => {
-                // Enviamos a categoria para TODOS, mas o tema apenas para os inocentes
-                if (p.id === impostor.id) {
-                    io.to(p.id).emit("role", { 
-                        categoria: categoriaSorteada, 
-                        tema: "???", 
-                        impostor: true 
-                    });
-                } else {
-                    io.to(p.id).emit("role", { 
-                        categoria: categoriaSorteada, 
-                        tema: tema, 
-                        impostor: false 
-                    });
-                }
+                const ehImpostor = (p.id === impostorSorteado.id);
+                io.to(p.id).emit("role", { 
+                    categoria: categoriaSorteada, 
+                    tema: ehImpostor ? "???" : temaSorteado, 
+                    impostor: ehImpostor 
+                });
             });
-        }, 3500);
+        }, 3500); 
     });
 
     socket.on("disconnect", () => {
