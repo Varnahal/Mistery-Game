@@ -13,6 +13,8 @@ let impostor = "";
 
 
 io.on("connection", (socket) => {
+
+    
     io.emit("players", players);
     console.log("Alguém conectou:", socket.id);
     
@@ -48,6 +50,9 @@ io.on("connection", (socket) => {
         "Aventura e Ficção": ["Navio Pirata", "Estação Espacial", "Castelo Medieval", "Fundo do Mar", "Escola de Magia", "Apocalipse Zumbi", "Base em Marte"],
         "Trabalho e Cotidiano": ["Escritório", "Canteiro de Obras", "Delegacia", "Oficina Mecânica", "Corpo de Bombeiros", "Salão de Beleza", "Fazenda"]
     };
+
+    const nomesCategorias = Object.keys(categorias);
+    socket.emit("lista_categorias", nomesCategorias);
 
     // ... restante do código anterior ...
 

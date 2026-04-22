@@ -210,9 +210,6 @@
             <p style="font-size: 0.8rem; color: var(--accent-color);">Você é o Líder! Escolha o grupo de temas:</p>
             <select id="theme-selector" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid var(--accent-color);">
                 <option value="aleatorio">🎲 Totalmente Aleatório</option>
-                <option value="Lugares Públicos">🏢 Lugares Públicos</option>
-                <option value="Aventura e Ficção">⚔️ Aventura e Ficção</option>
-                <option value="Trabalho e Cotidiano">💼 Trabalho e Cotidiano</option>
             </select>
         </div>
         <div class="btn-stack">
@@ -239,18 +236,26 @@
 <script>
     const socket = io({ transports: ["websocket"] });
 
-    const categoriasJS = {
-        "Lugares Públicos": ["Praia", "Hospital", "Escola", "Restaurante", "Aeroporto", "Cinema", "Zoológico"],
-        "Aventura": ["Navio Pirata", "Estação Espacial", "Castelo Medieval", "Fundo do Mar", "Escola de Magia"],
-        "Trabalho": ["Escritório", "Canteiro de Obras", "Delegacia", "Oficina Mecânica"]
-    };
-
     function join() {
         const nameInput = document.getElementById("name");
         if(nameInput.value.trim() === "") return alert("Digite um nome!");
         socket.emit("join", nameInput.value);
         nameInput.disabled = true; // Evita trocar nome no meio
     }
+
+    socket.on("lista_categorias", (nomesCategorias) => {
+        const selector = document.getElementById("theme-selector");
+        
+        // Mantém apenas a primeira opção (Aleatório) e remove o resto para não duplicar
+        selector.innerHTML = '<option value="aleatorio">🎲 Totalmente Aleatório</option>';
+
+        nomesCategorias.forEach(cat => {
+            const opt = document.createElement("option");
+            opt.value = cat;
+            opt.textContent = cat; // O nome que aparecerá no select
+            selector.appendChild(opt);
+        });
+    });
 
     // Atualiza a função start para enviar o tema escolhido
     function start() {
