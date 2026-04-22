@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystery Game</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn-stack {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-join {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-join:hover { background-color: var(--accent-hover); }
+
+        .btn-start {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-start:hover { background-color: #059669; }
+
+        table {
+            width: 100%;
+            margin-top: 2rem;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #334155;
+        }
+
+        td {
+            padding: 12px 0;
+            border-bottom: 1px solid #1e293b;
+            font-size: 0.95rem;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #334155;
+            margin-left: 8px;
+        }
+
+        /* Modal Simples para o Role */
+        #role-display {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--accent-color);
+        }
+
+        #countdown-overlay {
+            display: none; /* Escondido por padrão */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.9); /* Cor do fundo do app */
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #countdown-number {
+            font-size: 8rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        #linkDesenho {
+            display: none;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+    
+<div id="countdown-overlay">
+    <div id="countdown-number"></div>
+</div>
+
+<div class="container">
+    <h1>🕵️ MYSTERY GAME</h1>
+    
+    <div class="input-group">
+        <input type="text" id="name" placeholder="Digite seu nome...">
+        <div class="btn-stack">
+            <button class="btn-join" onclick="join()">Entrar</button>
+            <button class="btn-start" onclick="start()">Começar</button>
+        </div>
+    </div>
+
+    <div id="role-display"></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Jogadores Online</th>
+            </tr>
+        </thead>
+        <tbody id="players">
+            </tbody>
+    </table>
+    <p id="linkDesenho">Link para o desenho: <a href="https://magma.com/d/rsQiSnAT3X" target="_blank">https://magma.com/d/rsQiSnAT3X</a></p>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io({ transports: ["websocket"] });
+
+    function join() {
+        const nameInput = document.getElementById("name");
+        if(nameInput.value.trim() === "") return alert("Digite um nome!");
+        socket.emit("join", nameInput.value);
+        nameInput.disabled = true; // Evita trocar nome no meio
+    }
+
+    function start() {
+        socket.emit("start");
+    }
+
+    socket.on("role", (data) => {
+        const display = document.getElementById("role-display");
+        const link = document.getElementById("linkDesenho");
+        display.style.display = "block";
+        link.style.display = "block";
+        if (data.impostor) {
+            display.innerHTML = `<b style="color: var(--danger)">VOCÊ É O IMPOSTOR!</b><br>Tente descobrir o Tema.`;
+        } else {
+            display.innerHTML = `Tema: <b style="color: #10b981">${data.tema}</b><br>Descubra quem é o impostor!`;
+        }
+    });
+
+    socket.on("players", (data) => {
+        const tbody = document.getElementById("players");
+        tbody.innerHTML = "";
+        data.forEach(player => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${player.name} <span class="status-badge">Pronto</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    });
+
+    socket.on("preparing_start", () => {
+        const overlay = document.getElementById("countdown-overlay");
+        const number = document.getElementById("countdown-number");
+        let count = 3;
+
+        overlay.style.display = "flex";
+        number.textContent = count;
+
+        const interval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                number.textContent = count;
+            } else if (count === 0) {
+                number.textContent = "VAI!";
+            } else {
+                clearInterval(interval);
+                overlay.style.display = "none";
+            }
+        }, 1000);
+    });
+</script>
+
+</body>
+</html>
