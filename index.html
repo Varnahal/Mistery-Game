@@ -206,6 +206,15 @@
     
     <div class="input-group">
         <input type="text" id="name" placeholder="Digite seu nome...">
+        <div id="leader-area" style="display: none; margin-bottom: 15px;">
+        <p style="font-size: 0.8rem; color: var(--accent-color);">Você é o Líder!</p>
+        <select id="theme-selector" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid var(--accent-color);">
+            <option value="aleatorio">🎲 Tema Aleatório</option>
+            <optgroup label="Lugares Públicos" id="opt-publicos"></optgroup>
+            <optgroup label="Aventura" id="opt-aventura"></optgroup>
+            <optgroup label="Trabalho" id="opt-trabalho"></optgroup>
+        </select>
+    </div>
         <div class="btn-stack">
             <button class="btn-join" onclick="join()">Entrar</button>
             <button class="btn-start" onclick="start()">Começar</button>
@@ -230,6 +239,27 @@
 <script>
     const socket = io({ transports: ["websocket"] });
 
+    const categoriasJS = {
+        "Lugares Públicos": ["Praia", "Hospital", "Escola", "Restaurante", "Aeroporto", "Cinema", "Zoológico"],
+        "Aventura": ["Navio Pirata", "Estação Espacial", "Castelo Medieval", "Fundo do Mar", "Escola de Magia"],
+        "Trabalho": ["Escritório", "Canteiro de Obras", "Delegacia", "Oficina Mecânica"]
+    };
+
+    // Preencher o select automaticamente
+    function setupThemes() {
+        const maps = { "Lugares Públicos": "opt-publicos", "Aventura": "opt-aventura", "Trabalho": "opt-trabalho" };
+        for (let cat in categoriasJS) {
+            const group = document.getElementById(maps[cat]);
+            categoriasJS[cat].forEach(t => {
+                const opt = document.createElement("option");
+                opt.value = t;
+                opt.textContent = t;
+                group.appendChild(opt);
+            });
+        }
+    }
+    setupThemes();
+
     function join() {
         const nameInput = document.getElementById("name");
         if(nameInput.value.trim() === "") return alert("Digite um nome!");
@@ -237,8 +267,10 @@
         nameInput.disabled = true; // Evita trocar nome no meio
     }
 
+    // Atualiza a função start para enviar o tema escolhido
     function start() {
-        socket.emit("start");
+        const temaEscolhido = document.getElementById("theme-selector").value;
+        socket.emit("start", temaEscolhido);
     }
 
     socket.on("role", (data) => {
@@ -266,10 +298,17 @@
     socket.on("players", (data) => {
         const tbody = document.getElementById("players");
         tbody.innerHTML = "";
-        data.forEach(player => {
+        
+        // Verifica se EU sou o líder (o primeiro da lista)
+        const isLeader = data.length > 0 && data[0].id === socket.id;
+        document.getElementById("leader-area").style.display = isLeader ? "block" : "none";
+        document.querySelector(".btn-start").style.display = isLeader ? "block" : "none";
+
+        data.forEach((player, index) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td>${player.name} <span class="status-badge">Pronto</span></td>
+                <td>${player.name} ${index === 0 ? '<span class="status-badge" style="color: gold;">👑 Líder</span>' : ''}</td>
+                <td style="text-align: right; color: var(--text-dim);">${player.id.substring(0,5)}</td>
             `;
             tbody.appendChild(tr);
         });

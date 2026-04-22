@@ -51,32 +51,36 @@ io.on("connection", (socket) => {
 
     // ... restante do código anterior ...
 
-    socket.on("start", () => {
-        // 1. Sorteia a categoria
-        const chaves = Object.keys(categorias);
-        const categoriaSorteada = chaves[Math.floor(Math.random() * chaves.length)];
-        
-        // 2. Sorteia o tema dentro daquela categoria
-        const listaLocais = categorias[categoriaSorteada];
-        const temaSorteado = listaLocais[Math.floor(Math.random() * listaLocais.length)];
-        
-        // 3. Sorteia o impostor
-        const impostorSorteado = players[Math.floor(Math.random() * players.length)];
+    socket.on("start", (temaEscolhido) => {
+        // Opcional: Validar se quem enviou é o primeiro da lista (Líder)
+        if (players.length > 0 && socket.id === players[0].id) {
+            
+            // Se o líder escolheu "aleatorio", sorteamos como antes
+            if (temaEscolhido === "aleatorio") {
+                const chaves = Object.keys(categorias);
+                const cat = chaves[Math.floor(Math.random() * chaves.length)];
+                tema = categorias[cat][Math.floor(Math.random() * categorias[cat].length)];
+                // Para o aleatório, enviamos a categoria também
+                var categoriaEnviada = cat;
+            } else {
+                tema = temaEscolhido;
+                var categoriaEnviada = "Escolha do Líder";
+            }
 
-        // 4. Avisa todo mundo da contagem (3, 2, 1...)
-        io.emit("preparing_start");
+            impostor = players[Math.floor(Math.random() * players.length)];
+            io.emit("preparing_start");
 
-        // 5. Envia os papéis após a contagem
-        setTimeout(() => {
-            players.forEach(p => {
-                const ehImpostor = (p.id === impostorSorteado.id);
-                io.to(p.id).emit("role", { 
-                    categoria: categoriaSorteada, 
-                    tema: ehImpostor ? "???" : temaSorteado, 
-                    impostor: ehImpostor 
+            setTimeout(() => {
+                players.forEach(p => {
+                    const ehImpostor = (p.id === impostor.id);
+                    io.to(p.id).emit("role", { 
+                        categoria: categoriaEnviada, 
+                        tema: ehImpostor ? "???" : tema, 
+                        impostor: ehImpostor 
+                    });
                 });
-            });
-        }, 3500); 
+            }, 3500);
+        }
     });
 
     socket.on("disconnect", () => {
