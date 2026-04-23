@@ -24,6 +24,10 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            overflow: hidden; /* Opcional: evita scroll se os mouses saírem da área */
+            position: relative;
+            width: 100vw;
+            height: 100vh;
         }
 
         .container {
@@ -169,9 +173,11 @@
 
         .remote-cursor {
             position: fixed;
-            pointer-events: none; /* Garante que o cursor não atrapalhe cliques */
+            top: 0;   /* Importante: comece no zero para o translate funcionar */
+            left: 0;  /* Importante: comece no zero para o translate funcionar */
+            pointer-events: none;
             z-index: 9999;
-            transition: transform 0.1s linear; /* Suaviza o movimento */
+            will-change: transform; /* Melhora a performance da animação */
         }
 
         .cursor-pointer {
@@ -330,9 +336,19 @@
     let lastSend = 0;
     window.addEventListener('mousemove', (e) => {
         const now = Date.now();
-        if (now - lastSend > 50) { // Só envia a cada 50ms
+        if (now - lastSend > 50) {
             const name = document.getElementById("name").value;
-            socket.emit("mouse_move", { x: e.clientX, y: e.clientY, name });
+            if (name) {
+                // Calcula a posição em porcentagem (0 a 1)
+                const xPct = e.clientX / window.innerWidth;
+                const yPct = e.clientY / window.innerHeight;
+
+                socket.emit("mouse_move", {
+                    x: xPct,
+                    y: yPct,
+                    name: name
+                });
+            }
             lastSend = now;
         }
     });
@@ -342,7 +358,6 @@
         let cursorDiv = cursors[data.id];
 
         if (!cursorDiv) {
-            // Se o cursor não existe, cria ele
             cursorDiv = document.createElement("div");
             cursorDiv.className = "remote-cursor";
             cursorDiv.innerHTML = `
@@ -353,8 +368,11 @@
             cursors[data.id] = cursorDiv;
         }
 
-        // Atualiza a posição
-        cursorDiv.style.transform = `translate(${data.x}px, ${data.y}px)`;
+        // Converte a porcentagem de volta para pixels baseada na tela ATUAL
+        const xPx = data.x * window.innerWidth;
+        const yPx = data.y * window.innerHeight;
+
+        cursorDiv.style.transform = `translate(${xPx}px, ${yPx}px)`;
     });
 
     // 3. Remover cursor quando alguém sai
